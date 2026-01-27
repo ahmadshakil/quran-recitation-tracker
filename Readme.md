@@ -44,6 +44,18 @@ python3 -m http.server 8000
 2. Ensure the `data/` directory has read permissions.
 3. Access via `http://your-server-ip/project-folder-name/`.
 
+## 📱 PWA & Offline Support
+
+This app is a **Progressive Web App (PWA)**.
+
+1.  **Installable**: You can install it on your specific device:
+    *   **Mobile (Android/iOS)**: Open in Chrome/Safari -> Tap "Share" or "Menu" -> Select **"Add to Home Screen"**.
+    *   **Desktop (Chrome/Edge)**: Click the **Install icon** inside the address bar.
+2.  **Offline-Ready**:
+    *   Once loaded, the app works **100% offline**.
+    *   It automatically caches the interface, the Quran text, and any audio you listen to.
+    *   Next time you open it without internet, it will load instantly from the cache.
+
 ---
 
 ## 🛠️ How It Works

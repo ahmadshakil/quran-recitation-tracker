@@ -64,6 +64,10 @@ $(document).ready(function () {
     const $preloadText = $('#preloadText');
     const audioPlayer = document.getElementById('originalAudio');
 
+    // Load State from SessionManager (Moved to top)
+    const savedState = SessionManager.load();
+    console.log("Loaded Saved State:", savedState);
+
     // Initialize - Load Local JSON
     loadLocalData();
 
@@ -86,12 +90,13 @@ $(document).ready(function () {
 
             $suraSelect.empty().append('<option value="">اختر السورة...</option>');
             surasMetadata.forEach(sura => {
-                const selected = (savedState.sura == sura.no) ? 'selected' : '';
-                $suraSelect.append(`<option value="${sura.no}" ${selected}>${sura.no}. ${sura.name}</option>`);
+                const html = SessionManager.getOptionHtml(sura, savedState.sura);
+                $suraSelect.append(html);
             });
 
             // Trigger change if we have a saved surah to load its ayahs
             if (savedState.sura) {
+                console.log("Triggering auto-select for Surah:", savedState.sura);
                 $suraSelect.trigger('change');
             }
         }).fail(function () {
@@ -100,26 +105,16 @@ $(document).ready(function () {
         });
     }
 
-    // Load State from LocalStorage
-    const savedState = JSON.parse(localStorage.getItem('recitationState')) || {};
-
-    function saveState() {
-        const state = {
-            sura: $suraSelect.val(),
-            from: $fromAyah.val(),
-            to: $toAyah.val()
-        };
-        localStorage.setItem('recitationState', JSON.stringify(state));
-    }
-
     $suraSelect.on('change', function () {
         const suraNo = parseInt($(this).val());
+        console.log("Surah Changed to:", suraNo);
         if (suraNo) {
             const allSurahAyahs = quranData.filter(aya => aya.sura_no === suraNo);
             populateAyahSelects(allSurahAyahs);
 
             // Restore range if matches saved surah
-            if (savedState.sura == suraNo && savedState.from && savedState.to) {
+            if (SessionManager.shouldRestore(savedState, suraNo)) {
+                console.log("Restoring saved range:", savedState.from, "to", savedState.to);
                 $fromAyah.val(savedState.from);
                 $toAyah.val(savedState.to);
                 savedState.from = null; // Clear to prevent sticky state
@@ -128,17 +123,24 @@ $(document).ready(function () {
             resetUI();
             $ayahInfo.text(`تم اختيار سورة ${allSurahAyahs[0].sura_name_ar}. اضبط المدى واضغط ابدأ.`);
             preloadAudioRange();
-            saveState();
+            SessionManager.save(suraNo, $fromAyah.val(), $toAyah.val());
         } else {
             resetUI();
             $fromAyah.empty().append('<option value="1">1</option>');
             $toAyah.empty().append('<option value="">--</option>');
-            saveState();
+            SessionManager.save(null, null, null);
         }
     });
 
-    $fromAyah.on('change', () => { preloadAudioRange(); saveState(); });
-    $toAyah.on('change', () => { preloadAudioRange(); saveState(); });
+    $fromAyah.on('change', () => {
+        preloadAudioRange();
+        SessionManager.save($suraSelect.val(), $fromAyah.val(), $toAyah.val());
+    });
+
+    $toAyah.on('change', () => {
+        preloadAudioRange();
+        SessionManager.save($suraSelect.val(), $fromAyah.val(), $toAyah.val());
+    });
 
 
     function populateAyahSelects(ayahs) {
@@ -309,16 +311,26 @@ $(document).ready(function () {
         const currentAyah = surahAyahs[currentAyahIndex];
         const targetWords = normalizeArabic(currentAyah.aya_text_emlaey).split(/\s+/);
 
+        // CRITICAL FIX: Only process new words that haven't been "consumed" yet
+        // In this simple loop, we just check the *first* matching word and stop.
+        // This prevents "Allah Allah" in one breath from triggering 2 matches instantly if only 1 was expected.
+
+        let processedWordCount = 0;
+
         for (let word of spokenWords) {
-            // THE SIMPLEST & STRICT RULE: 
-            // Does the word match EXACTLY the next expected word in the sequence?
+            // STRICT SEQUENCE: Word must match EXACTLY the next expected word
             if (word === targetWords[expectedWordIndex]) {
                 if (performPhoneticCheck(expectedWordIndex)) {
                     $(`.quran-word[data-index="${expectedWordIndex}"]`).removeClass('hidden').addClass('correct');
                     expectedWordIndex++;
+                    processedWordCount++;
 
                     resetSilenceTimer();
                     checkAyahCompletion();
+
+                    // Break after ONE successful word match per event to prevent "running ahead" too fast
+                    // or matching duplicate words in the same transcript chunk incorrectly.
+                    if (processedWordCount >= 1) break;
                 } else if (isFinal) {
                     console.log("Phonetic mismatch detected on final result");
                     handleMistake();
