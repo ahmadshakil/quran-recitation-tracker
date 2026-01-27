@@ -1,6 +1,6 @@
 {
-    "name": "Quran Recitation Tester",
-    "short_name": "QuranTester",
+    "name": "Quran Recitation Tracker",
+    "short_name": "QuranTracker",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#1a1a1a",
