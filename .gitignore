@@ -1,0 +1,20 @@
+# Audio Data (Too large for Git)
+data/audio/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+env/
+
+# Node/JS
+node_modules/
+npm-debug.log
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo

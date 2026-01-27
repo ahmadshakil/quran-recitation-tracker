@@ -1,0 +1,20 @@
+{
+    "name": "Quran Recitation Tester",
+    "short_name": "QuranTester",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#1a1a1a",
+    "theme_color": "#D4AF37",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3024/3024578.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3024/3024578.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

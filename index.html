@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recitation Tester - Ayah by Ayah</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Outfit:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>اختبار التلاوة</h1>
+            <p>تلاوة آية بآية مع التحقق الفوري</p>
+        </header>
+
+        <div class="setup-section">
+            <div class="control-card">
+                <label for="suraSelect">اختر السورة:</label>
+                <select id="suraSelect">
+                    <option value="">جاري التحميل...</option>
+                </select>
+            </div>
+
+            <div class="control-card range-selects">
+                <div class="range-group">
+                    <label for="fromAyah">من آية:</label>
+                    <select id="fromAyah">
+                        <option value="1">1</option>
+                    </select>
+                </div>
+                <div class="range-group">
+                    <label for="toAyah">إلى آية:</label>
+                    <select id="toAyah">
+                        <option value="">--</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="startBtn" class="premium-btn">ابدأ التسميع</button>
+                <button id="stopBtn" class="premium-btn stop" style="display: none;">إيقاف</button>
+            </div>
+        </div>
+
+        <main id="recitationArea" class="recitation-area">
+            <div class="ayah-card" id="currentAyahContainer">
+                <div class="ayah-header">
+                    <span id="ayahInfo">يرجى اختيار سورة للبدء</span>
+                </div>
+                <div id="ayahText" class="ayah-text"></div>
+                <div id="preloadStatus" class="preload-status" style="display: none;">
+                    <span class="spinner"></span>
+                    <span id="preloadText">جاري تحميل الملفات الصوتية...</span>
+                </div>
+            </div>
+
+            <div id="statusIndicator" class="status-indicator">
+                <span id="statusText">جاهز للبدء</span>
+                <div id="audioWave" class="wave-animation" style="display: none;">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="progress-bar">
+                <div id="progressBarFill" class="progress-fill" style="width: 0%;"></div>
+            </div>
+            <p id="overallProgress">آية 0 من 0</p>
+        </footer>
+    </div>
+
+    <!-- Hidden Audio Player for Feedback -->
+    <audio id="originalAudio"></audio>
+
+    <script src="libs/jquery.min.js"></script>
+    <script src="libs/socket.io.min.js"></script>
+    <script src="libs/meyda.min.js"></script>
+    <script src="app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered! Scope:', reg.scope))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>
