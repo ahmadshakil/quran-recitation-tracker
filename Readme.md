@@ -54,7 +54,7 @@ python3 -m http.server 8000
 
 ## 📂 Project Structure
 
-- `standalone-tester/`: The main web application folder.
+- `quran-recitation-tracker/`: The main web application folder.
   - `index.html`: Main interface.
   - `app.js`: Core logic for speech recognition and AI analysis.
   - `data/`: Contains text JSON and audio files.
