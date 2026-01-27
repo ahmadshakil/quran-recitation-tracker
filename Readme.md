@@ -31,18 +31,18 @@ This is a web app, so you need a local server to run it properly. Double-clickin
 **Option A: Python (Simplest)**
 ```bash
 python3 -m http.server 8000
-# Then open http://localhost:8000/standalone-tester/ in your browser
+# Then open http://localhost:8000/ in your browser
 ```
 
 **Option B: VS Code Live Server**
 1. Install the **"Live Server"** extension in VS Code.
-2. Right-click `standalone-tester/index.html`.
+2. Right-click `index.html`.
 3. Select **"Open with Live Server"**.
 
 **Option C: Deploy to Web Server (Apache/Nginx)**
-1. Copy the entire `standalone-tester` folder to your web root (e.g., `/var/www/html/`).
+1. Copy the **entire project folder** to your web root (e.g., `/var/www/html/`).
 2. Ensure the `data/` directory has read permissions.
-3. Access via `http://your-server-ip/standalone-tester/`.
+3. Access via `http://your-server-ip/project-folder-name/`.
 
 ---
 
@@ -54,7 +54,7 @@ python3 -m http.server 8000
 
 ## 📂 Project Structure
 
-- `quran-recitation-tracker/`: The main web application folder.
+- **Project Root**: The main web application folder.
   - `index.html`: Main interface.
   - `app.js`: Core logic for speech recognition and AI analysis.
   - `data/`: Contains text JSON and audio files.
