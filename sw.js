@@ -41,7 +41,10 @@ self.addEventListener('fetch', (event) => {
             caches.open('quran-audio-cache').then((cache) => {
                 return cache.match(event.request).then((response) => {
                     return response || fetch(event.request).then((networkResponse) => {
-                        cache.put(event.request, networkResponse.clone());
+                        // Only cache complete responses (status 200), not partial content (206)
+                        if (networkResponse.status === 200) {
+                            cache.put(event.request, networkResponse.clone());
+                        }
                         return networkResponse;
                     });
                 });
@@ -56,7 +59,10 @@ self.addEventListener('fetch', (event) => {
             caches.open('quran-phonetics-cache').then((cache) => {
                 return cache.match(event.request).then((response) => {
                     return response || fetch(event.request).then((networkResponse) => {
-                        cache.put(event.request, networkResponse.clone());
+                        // Only cache complete responses (status 200)
+                        if (networkResponse.status === 200) {
+                            cache.put(event.request, networkResponse.clone());
+                        }
                         return networkResponse;
                     });
                 });
@@ -68,13 +74,24 @@ self.addEventListener('fetch', (event) => {
     // 3. Handle App Shell (Stale-While-Revalidate)
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            const fetchPromise = fetch(event.request).then((networkResponse) => {
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, networkResponse.clone());
+
+            if (cachedResponse) {
+                // Update cache in background
+                fetch(event.request).then((networkResponse) => {
+                    return caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, networkResponse.clone());
+                    });
                 });
-                return networkResponse;
+                return cachedResponse;
+            }
+
+            // No cache → fetch and cache
+            return fetch(event.request).then((networkResponse) => {
+                return caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                });
             });
-            return cachedResponse || fetchPromise;
         })
     );
 });
