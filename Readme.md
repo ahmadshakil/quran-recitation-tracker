@@ -62,7 +62,7 @@ This app is a **Progressive Web App (PWA)**.
 
 1.  **Strict Validation**: The app listens to every word you say. It must match the *exact* sequence of the Quran.
 2.  **No Skips Allowed**: If you skip a word, jump to the next Ayah, or start the next Surah, it stops you immediately.
-3.  **Phonetic AI**: Even if you say the right word, if your pronunciation (vowels/tajweed) is too different from the reference audio, it counts as a mistake.
+3.  **Phonetic AI**: Even if you say the right word, if your pronunciation (vowels/tajweed) is too different from the reference audio, it counts as a mistake. (Current logic .. Under testing)
 
 ## 📂 Project Structure
 
