@@ -295,13 +295,25 @@ fun QiblaCompassScreen() {
             text = "Current Azimuth: ${currentAzimuth.toInt()}°",
             style = MaterialTheme.typography.titleMedium
         )
-        
         if (directionDiff < 5 || directionDiff > 355) {
             Text(
                 text = "You are facing the Qibla!",
                 color = Color(0xFF008000),
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        } else {
+            val turnText = if (directionDiff <= 180) {
+                "Turn ${(directionDiff).toInt()}° Clockwise"
+            } else {
+                "Turn ${(360 - directionDiff).toInt()}° Anti-Clockwise"
+            }
+            Text(
+                text = turnText,
+                color = Color.DarkGray,
+                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 16.dp)
             )
         }
