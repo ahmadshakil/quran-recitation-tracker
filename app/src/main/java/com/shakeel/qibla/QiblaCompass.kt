@@ -13,14 +13,23 @@ import android.location.LocationManager
 import android.os.Bundle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -139,14 +148,23 @@ fun QiblaCompassScreen() {
         
         var gravity: FloatArray? = null
         var geomagnetic: FloatArray? = null
+        val alpha = 0.15f // Low-pass filter constant
+        
+        fun lowPassFilter(input: FloatArray, output: FloatArray?): FloatArray {
+            if (output == null) return input
+            for (i in input.indices) {
+                output[i] = output[i] + alpha * (input[i] - output[i])
+            }
+            return output
+        }
         
         val sensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                    gravity = event.values.clone()
+                    gravity = lowPassFilter(event.values.clone(), gravity)
                 }
                 if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-                    geomagnetic = event.values.clone()
+                    geomagnetic = lowPassFilter(event.values.clone(), geomagnetic)
                 }
                 
                 if (gravity != null && geomagnetic != null) {
@@ -295,27 +313,50 @@ fun QiblaCompassScreen() {
             text = "Current Azimuth: ${currentAzimuth.toInt()}°",
             style = MaterialTheme.typography.titleMedium
         )
-        if (directionDiff < 5 || directionDiff > 355) {
-            Text(
-                text = "You are facing the Qibla!",
-                color = Color(0xFF008000),
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(top = 16.dp)
-            )
-        } else {
-            val turnText = if (directionDiff <= 180) {
-                "Turn ${(directionDiff).toInt()}° Clockwise"
+        AnimatedContent(
+            targetState = directionDiff < 5 || directionDiff > 355,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(500)) togetherWith fadeOut(animationSpec = tween(500))
+            },
+            label = "Qibla Status Animation"
+        ) { isFacingQibla ->
+            if (isFacingQibla) {
+                Text(
+                    text = "You are facing the Qibla!",
+                    color = Color(0xFF008000),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
             } else {
-                "Turn ${(360 - directionDiff).toInt()}° Anti-Clockwise"
+                val isClockwise = directionDiff <= 180
+                val turnText = if (isClockwise) {
+                    "Turn ${(directionDiff).toInt()}° Clockwise"
+                } else {
+                    "Turn ${(360 - directionDiff).toInt()}° Anti-Clockwise"
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Icon(
+                        painter = rememberVectorPainter(image = Icons.Default.Refresh),
+                        contentDescription = "Turn Direction",
+                        tint = if (isClockwise) Color.Blue else Color.Red,
+                        modifier = Modifier
+                            .graphicsLayer(scaleX = if (isClockwise) 1f else -1f) // Flip icon for anti-clockwise
+                            .size(28.dp)
+                            .padding(end = 8.dp)
+                    )
+                    Text(
+                        text = turnText,
+                        color = if (isClockwise) Color.Blue else Color.Red,
+                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
-            Text(
-                text = turnText,
-                color = Color.DarkGray,
-                fontWeight = FontWeight.Medium,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 16.dp)
-            )
         }
     }
 }
