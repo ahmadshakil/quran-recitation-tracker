@@ -23,8 +23,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 
 @Composable
@@ -78,6 +82,7 @@ fun QiblaApp() {
 @Composable
 fun QiblaCompassScreen() {
     val context = LocalContext.current
+    val textMeasurer = rememberTextMeasurer()
     var qiblaBearing by remember { mutableFloatStateOf(0f) }
     var currentAzimuth by remember { mutableFloatStateOf(0f) }
     var locationError by remember { mutableStateOf<String?>(null) }
@@ -213,29 +218,54 @@ fun QiblaCompassScreen() {
                 )
 
                 rotate(degrees = -currentAzimuth) {
+                    val textStyle = TextStyle(color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                    val nLayout = textMeasurer.measure("N", textStyle.copy(color = Color.Red))
+                    val sLayout = textMeasurer.measure("S", textStyle)
+                    val eLayout = textMeasurer.measure("E", textStyle)
+                    val wLayout = textMeasurer.measure("W", textStyle)
+
                     drawLine(
                         color = Color.Red,
                         start = center,
-                        end = Offset(center.x, 0f),
+                        end = Offset(center.x, 0f + nLayout.size.height + 5f),
                         strokeWidth = 4f
                     )
+                    drawText(
+                        textLayoutResult = nLayout,
+                        topLeft = Offset(center.x - nLayout.size.width / 2, 5f)
+                    )
+
                     drawLine(
                         color = Color.Black,
                         start = center,
-                        end = Offset(center.x, size.height),
+                        end = Offset(center.x, size.height - sLayout.size.height - 5f),
                         strokeWidth = 2f
                     )
+                    drawText(
+                        textLayoutResult = sLayout,
+                        topLeft = Offset(center.x - sLayout.size.width / 2, size.height - sLayout.size.height - 5f)
+                    )
+
                     drawLine(
                         color = Color.Black,
                         start = center,
-                        end = Offset(size.width, center.y),
+                        end = Offset(size.width - eLayout.size.width - 5f, center.y),
                         strokeWidth = 2f
                     )
+                    drawText(
+                        textLayoutResult = eLayout,
+                        topLeft = Offset(size.width - eLayout.size.width - 5f, center.y - eLayout.size.height / 2)
+                    )
+
                     drawLine(
                         color = Color.Black,
                         start = center,
-                        end = Offset(0f, center.y),
+                        end = Offset(0f + wLayout.size.width + 5f, center.y),
                         strokeWidth = 2f
+                    )
+                    drawText(
+                        textLayoutResult = wLayout,
+                        topLeft = Offset(5f, center.y - wLayout.size.height / 2)
                     )
                 }
                 
